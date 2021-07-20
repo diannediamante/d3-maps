@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<META charset="utf-8" />
+
+<script SRC="https://d3js.org/d3.v4.js"></script>
+<script SRC="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+<script SRC="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+
+<svg id="my_dataviz" width="630" height="350"></svg>
+<script>
+
+    var svg = d3.select("svg"),
+        width = +svg.attr("width"),
+        height = +svg.attr("height");
+
+    var projection = d3
+        .geoMercator()
+        .center([0, 20])
+        .scale(99)
+        .translate([width/2, height/2]);
+
+    d3.queue()
+        .defer(
+            d3.json,
+            "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"
+        )
+        .defer(
+            d3.csv, "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/data_gpsLocSurfer.csv"
+        )
+        .await(ready);
+
+    function ready(error, dataGeo, circleData) {
+
+        var pathBuilder = d3.geoPath(projection)
+        //draw the map
+        svg
+            .append("g")
+            .selectAll("path")
+            .data(dataGeo.features)
+            .enter()
+            .append("path")
+            .attr("d", function(eachFeature) {
+                return pathBuilder(eachFeature)
+
+            })
+            .attr("fill", "grey")
+            .attr("opacity", 0.3)
+        
+
+        svg
+            .append("g")
+            .selectAll("circle")
+            .data(circleData)
+            .enter()
+            .append("circle")
+            .attr("cx", function(eachCircle){
+                return projection([eachCircle.homelon, eachCircle.homelat])[0]
+            })
+            .attr("cy", function(eachCircle){
+                return projection([eachCircle.homelon, eachCircle.homelat])[1]
+            })
+            .attr("r", 1)
+    }
+</script>
+
