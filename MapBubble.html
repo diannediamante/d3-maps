@@ -45,6 +45,21 @@
             .attr("fill", "grey")
             .attr("opacity", 0.3)
         
+        var nMinAndMax = d3.extent(circleData, function(d) {
+            return +d.n;    //for the js to interpret it as an integer instead of string
+        })
+
+
+        var nToRadius = d3
+            .scaleSqrt()
+            .domain(nMinAndMax)
+            .range([1, 50])
+
+        var continentToColorScale = d3
+            .scaleOrdinal()
+            .domain(d3.map(circleData, d => d.homecontinent).keys())
+            .range(d3.schemeSet3)
+
 
         svg
             .append("g")
@@ -58,7 +73,20 @@
             .attr("cy", function(eachCircle){
                 return projection([eachCircle.homelon, eachCircle.homelat])[1]
             })
-            .attr("r", 1)
+            .attr("r", function(eachCircle) {
+                return nToRadius(eachCircle.n)
+            })
+            .attr("fill", d => continentToColorScale(d.homecontinent))
+            .attr("stroke", function(d) {
+                if (+d.n > 2000) {
+                    return "black"
+                }
+                else {
+                    return "none"
+                }
+            })
+            .attr("stroke-width", 0.1)
+            .attr("fill-opacity", 0.4)
     }
 </script>
 
