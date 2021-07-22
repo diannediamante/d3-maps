@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<META charset="utf-8" />
+
+<script SRC="https://d3js.org/d3.v4.js"></script>
+<script SRC="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+<script SRC="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+
+<h1>Regions in the Philippines</h1>
+<label class="label"></label>   <!-- Region -->
+
+
+<svg id="my_dataviz" width="500" height="800"></svg>
+
+<script>
+	var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+	var projection = d3
+	    .geoMercator()
+	    .center([40, 5])
+	    .scale([2150]) //zoom
+	    .translate([-2800, 650]); //placement
+
+	d3.queue()
+	    .defer(
+	        d3.json,
+	        "https://raw.githubusercontent.com/faeldon/philippines-json-maps/master/2011/geojson/regions/lowres/regions.0.001.json"
+	    )
+	    .defer(
+	        d3.csv, 
+	        "https://raw.githubusercontent.com/diannediamante/geojson/main/UPCAT2018AppQual.csv"
+	    )
+	    .await(ready);
+
+	var selectedRegion = null;
+
+	function ready(error, dataGeo, circleData) {
+
+
+	    var pathBuilder = d3.geoPath(projection)
+	    //draw the map
+	    svg
+	        .append("g")
+	        .selectAll("path")
+	        .data(dataGeo.features)
+	        .enter()
+	        .append("path")
+	        .attr("d", function(eachFeature) {
+	            return pathBuilder(eachFeature)
+
+	        })
+	        .style("fill", "green")
+
+	        
+	        .on("mouseenter", feature => {
+	            svg
+	                .selectAll(".label")
+	                .data([selectedRegion])
+	                .enter()
+	                .append("text")
+	                .attr("class", "label")
+	                .text(feature.properties.REGION)
+	                .attr("x", 10)
+	                .attr("y", 25)
+	                .attr("font-weight", "bold")
+	            
+	        })
+	        .on("mouseleave", () => svg.selectAll(".label").remove())
+	}
+</script>
+
